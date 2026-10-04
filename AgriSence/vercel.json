@@ -1,0 +1,15 @@
+{
+  "installCommand": "npm install --legacy-peer-deps",
+  "functions": {
+    "api/chat.ts": { "maxDuration": 60 },
+    "api/pest-diagnosis.ts": { "maxDuration": 60 },
+    "api/market-prices.ts": { "maxDuration": 60 },
+    "api/portal.ts": { "maxDuration": 60 }
+  },
+  "rewrites": [
+    {
+      "source": "/((?!api(?:/|$)).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

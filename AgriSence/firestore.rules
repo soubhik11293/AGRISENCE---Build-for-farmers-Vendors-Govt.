@@ -1,0 +1,176 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function ownsUser(userId) { return signedIn() && request.auth.uid == userId; }
+    function ownsExistingUserDoc() { return signedIn() && resource.data.userId == request.auth.uid; }
+    function ownsNewUserDoc() { return signedIn() && request.resource.data.userId == request.auth.uid; }
+    function hasPortalRole(role) {
+      return signedIn() && (role == 'farmer'
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.portalRole == 'farmer'
+        : role == 'office'
+          ? request.auth.token.portal == 'office' && get(/databases/$(database)/documents/officeMembers/$(request.auth.uid)).data.active == true
+          : request.auth.token.portal == 'vendor' && get(/databases/$(database)/documents/vendorProfiles/$(request.auth.uid)).data.active == true);
+    }
+
+    match /users/{userId} {
+      allow read: if ownsUser(userId);
+      allow create: if ownsUser(userId) && request.resource.data.portalRole == 'farmer' && request.resource.data.accountType == 'farmer';
+      allow update: if ownsUser(userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['portalRole', 'portalRoles', 'accountType', 'isAdmin', 'officialId', 'vendorId']);
+      allow delete: if false;
+    }
+
+    match /farms/{farmId} {
+      allow read: if ownsExistingUserDoc();
+      allow create: if ownsNewUserDoc();
+      allow update: if ownsExistingUserDoc() && ownsNewUserDoc();
+      allow delete: if ownsExistingUserDoc();
+    }
+
+    match /cropCycles/{cycleId} {
+      allow read: if ownsExistingUserDoc();
+      allow create: if ownsNewUserDoc();
+      allow update: if ownsExistingUserDoc() && ownsNewUserDoc();
+      allow delete: if ownsExistingUserDoc();
+    }
+
+    match /pestDiagnoses/{diagnosisId} {
+      allow read: if ownsExistingUserDoc();
+      allow create: if ownsNewUserDoc();
+      allow update, delete: if ownsExistingUserDoc();
+    }
+
+    match /soilTests/{soilTestId} {
+      allow read: if ownsExistingUserDoc();
+      allow create: if ownsNewUserDoc();
+      allow update, delete: if ownsExistingUserDoc();
+    }
+
+    match /weatherObservations/{observationId} {
+      allow read: if ownsExistingUserDoc();
+      allow create: if ownsNewUserDoc();
+      allow update, delete: if ownsExistingUserDoc();
+    }
+
+    match /outbreakAlerts/{alertId} {
+      allow read: if ownsExistingUserDoc();
+      allow create: if ownsNewUserDoc();
+      allow update, delete: if ownsExistingUserDoc();
+    }
+
+    match /recommendations/{recommendationId} {
+      allow read: if ownsExistingUserDoc();
+      allow create: if ownsNewUserDoc();
+      allow update, delete: if ownsExistingUserDoc();
+    }
+
+    match /tasks/{taskId} {
+      allow read: if ownsExistingUserDoc();
+      allow create: if ownsNewUserDoc();
+      allow update, delete: if ownsExistingUserDoc();
+    }
+
+    match /irrigationEvents/{eventId} {
+      allow read: if ownsExistingUserDoc();
+      allow create: if ownsNewUserDoc();
+      allow update, delete: if ownsExistingUserDoc();
+    }
+
+    match /sprayEvents/{eventId} {
+      allow read: if ownsExistingUserDoc();
+      allow create: if ownsNewUserDoc();
+      allow update, delete: if ownsExistingUserDoc();
+    }
+
+    match /marketPrices/{priceId} {
+      allow read: if ownsExistingUserDoc();
+      allow create: if ownsNewUserDoc();
+      allow update, delete: if ownsExistingUserDoc();
+    }
+
+    match /marketPurchases/{purchaseId} {
+      allow read: if ownsExistingUserDoc();
+      allow create: if ownsNewUserDoc();
+      allow update, delete: if ownsExistingUserDoc();
+    }
+
+    match /searchHistory/{searchId} {
+      allow read: if ownsExistingUserDoc();
+      allow create: if ownsNewUserDoc();
+      allow update, delete: if ownsExistingUserDoc();
+    }
+
+    match /harvests/{harvestId} {
+      allow read: if ownsExistingUserDoc();
+      allow create: if ownsNewUserDoc();
+      allow update, delete: if ownsExistingUserDoc();
+    }
+
+    match /sales/{saleId} {
+      allow read: if ownsExistingUserDoc();
+      allow create: if ownsNewUserDoc();
+      allow update, delete: if ownsExistingUserDoc();
+    }
+
+    match /expenses/{expenseId} {
+      allow read: if ownsExistingUserDoc();
+      allow create: if ownsNewUserDoc();
+      allow update, delete: if ownsExistingUserDoc();
+    }
+
+    match /simulationRuns/{runId} {
+      allow read: if ownsExistingUserDoc();
+      allow create: if ownsNewUserDoc();
+      allow update, delete: if ownsExistingUserDoc();
+    }
+
+    match /farmEvents/{eventId} {
+      allow read: if ownsExistingUserDoc();
+      allow create: if ownsNewUserDoc();
+      allow update, delete: if ownsExistingUserDoc();
+    }
+
+    match /reports/{reportId} {
+      allow read: if ownsExistingUserDoc();
+      allow create: if ownsNewUserDoc();
+      allow update, delete: if ownsExistingUserDoc();
+    }
+
+    match /officeCases/{caseId} {
+      allow read: if hasPortalRole('office') && ownsExistingUserDoc();
+      allow create: if hasPortalRole('office') && ownsNewUserDoc();
+      allow update: if hasPortalRole('office') && ownsExistingUserDoc() && ownsNewUserDoc();
+      allow delete: if hasPortalRole('office') && ownsExistingUserDoc();
+    }
+
+    match /vendorListings/{listingId} {
+      allow read: if hasPortalRole('vendor') && ownsExistingUserDoc();
+      allow create: if hasPortalRole('vendor') && ownsNewUserDoc();
+      allow update: if hasPortalRole('vendor') && ownsExistingUserDoc() && ownsNewUserDoc();
+      allow delete: if hasPortalRole('vendor') && ownsExistingUserDoc();
+    }
+
+    match /vendorLeads/{leadId} {
+      allow read: if hasPortalRole('vendor') && ownsExistingUserDoc();
+      allow create: if hasPortalRole('vendor') && ownsNewUserDoc();
+      allow update: if hasPortalRole('vendor') && ownsExistingUserDoc() && ownsNewUserDoc();
+      allow delete: if hasPortalRole('vendor') && ownsExistingUserDoc();
+    }
+
+    match /vendorOrders/{orderId} {
+      allow read: if signedIn() && ((hasPortalRole('vendor') && resource.data.vendorId == request.auth.uid) || (hasPortalRole('farmer') && resource.data.farmerId == request.auth.uid));
+      allow create, update, delete: if false;
+    }
+
+    match /fieldPrograms/{programId} {
+      allow read: if hasPortalRole('office') && resource.data.officerId == request.auth.uid;
+      allow create: if hasPortalRole('office') && request.resource.data.officerId == request.auth.uid;
+      allow update: if hasPortalRole('office') && resource.data.officerId == request.auth.uid && request.resource.data.officerId == request.auth.uid;
+      allow delete: if hasPortalRole('office') && resource.data.officerId == request.auth.uid;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

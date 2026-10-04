@@ -1,0 +1,6 @@
+{
+  "name": "AgriSence - Smart Agriculture & Pest Intelligence Platform",
+  "description": "AI-powered precision agriculture platform for pest diagnosis, early outbreak warnings, hyperlocal weather, satellite NDVI, and APMC mandi price discovery.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
